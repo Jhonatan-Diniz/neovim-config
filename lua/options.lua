@@ -13,6 +13,8 @@ vim.opt.list = true -- show tab characters and trailing whitespace
 
 vim.opt.termguicolors = true -- enable true color support
 
+vim.g.python3_host_prog = "C:/Users/Jhonatan/AppData/Local/Programs/Python/Python312"
+
 --vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
 --  pattern = {"*.py"},
 --  callback = function()

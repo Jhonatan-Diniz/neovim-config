@@ -85,9 +85,9 @@ require("lazy").setup({
      end,
      config = function()
        require("nvim-treesitter.configs").setup({
-         ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "python", "javascript" },
-         auto_install = false,
-         highlight = { enable = true, additional_vim_regex_highlighting = true },
+         ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "javascript", "cmake", "python" },
+         auto_install = true,
+         highlight = { enable = true, additional_vim_regex_highlighting = false },
          incremental_selection = {
            enable = true,
            keymaps = {
@@ -177,7 +177,7 @@ require("lazy").setup({
           },
 
           sources = cmp.config.sources({
-            { name = '_lsp' },
+            { name = 'nvim_lsp' },
             { name = 'luasnip' },
           }, {
             { name = 'buffer' },
