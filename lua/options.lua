@@ -9,24 +9,9 @@ vim.opt.shiftwidth = 4
 vim.opt.expandtab = true -- convert tabs to spaces
 vim.opt.autoindent = true -- auto indentation
 vim.opt.list = true -- show tab characters and trailing whitespace
--- 'n-v-c-i:block,r-cr-o:hor50,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor'
-
+-- vim.opt.guicursor = 'n-v-c:block, i-ci:block-blinkwait300-blinkon200-blinkoff150'
+-- vim.opt.guicursor = 'n-v-c:block-PMenuSel,r-cr-o:hor50,i:block-PMenu'
+vim.opt.guicursor = 'n-v-c:block,r-cr-o:hor50,i:blinkon100'
 vim.opt.termguicolors = true -- enable true color support
 
 vim.g.python3_host_prog = "C:/Users/Jhonatan/AppData/Local/Programs/Python/Python312"
-
---vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
---  pattern = {"*.py"},
---  callback = function()
---    vim.opt.textwidth = 79
---  end
---}) -- python formatting
-
--- vim.api.nvim_create_autocmd({"BufNewFile", "BufRead"}, {
---   pattern = {"*.js", "*.html", "*.css", "*.lua"},
---   callback = function()
---     vim.opt.tabstop = 2
---     vim.opt.softtabstop = 2
---     vim.opt.shiftwidth = 2
---   end
--- }) -- javascript formatting

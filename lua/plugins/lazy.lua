@@ -1,4 +1,5 @@
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
   local lazyrepo = "https://github.com/folke/lazy.nvim.git"
   local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
@@ -13,41 +14,54 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
    end
 end
 
-vim.opt.rtp:prepend(lazypath)
 
+vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
   { "savq/melange-nvim" },
   { 'projekt0n/github-nvim-theme', name = 'github-theme' },
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
   { 'https://github.com/clangd/coc-clangd.git' },
-  {
-    "scottmckendry/cyberdream.nvim",
-    lazy = false,
-    priority = 1000,
-    opts = {
-      transparent = true,
-      theme = {
-          variant = "default"
-      }
-    }
-  },
+
   {
       "startup-nvim/startup.nvim",
-      dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim", "nvim-telescope/telescope-file-browser.nvim" },
+      dependencies = {
+          "nvim-telescope/telescope.nvim",
+          "nvim-lua/plenary.nvim",
+          "nvim-telescope/telescope-file-browser.nvim" },
       config = function()
         require "startup".setup({theme="custom_theme"})
       end
   },
+
   {
     'nvim-telescope/telescope.nvim', tag = '0.1.8',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-    config = function()
+    dependencies = { 'nvim-lua/plenary.nvim', 'jonarrien/telescope-cmdline.nvim' },
+    keys = {
+        { 'Q', '<cmd>Telescope cmdline<cr>', desc = 'Cmdline' },
+        { '<leader><leader>', '<cmd>Telescope cmdline<cr>', desc = 'Cmdline' }
+    },
+    opts = { 
+        extensions = {
+                cmdline = {
+                    picker = {
+                        layout_config = {
+                          width  = 60,
+                          height = 5,
+                        }
+                    },
+                }
+        }
+    },
+    config = function(_, opts)
         vim.keymap.set("n", "<space><space>", require("telescope.builtin").find_files)
         vim.keymap.set("n", "<space>wf", require("telescope.builtin").grep_string)
         vim.keymap.set("n", "<space>ww", require("telescope.builtin").live_grep)
-    end
+        require("telescope").setup(opts)
+        require("telescope").load_extension('cmdline')
+    end,
   },
+
   {
     "slugbyte/lackluster.nvim",
     opts = {
@@ -57,29 +71,34 @@ require("lazy").setup({
         float = "transparent",
       },
     },
-    lazy = false,
-    priority = 1000,
+    lazy = true,
+    priority = 1,
     --vim.cmd.colorscheme("lackluster")
     -- vim.cmd.colorscheme("lackluster-hack") -- my favorite
     -- vim.cmd.colorscheme("lackluster-mint")
   },
-  {
-    "ficcdaf/ashen.nvim",
-    lazy = false,
-    priority = 1000,
-    -- configuration is optional!
-    opts = {
-      -- your settings here
-    },
-  },
+
+--  {
+--    "ficcdaf/ashen.nvim",
+--    lazy = false,
+--    priority = 1000,
+--    -- configuration is optional!
+--    opts = {
+--      -- your settings here
+--    },
+--  },
 
   -- Transparent Background
-  { "xiyaowong/transparent.nvim" },
+  { "xiyaowong/transparent.nvim",
+    extra_groups = {
+        "NormalFloat"
+    }
+
+  },
 
   -- TreeSitter 
-
   { "nvim-treesitter/nvim-treesitter", version = false,
-     dependencies =  { "HiPhish/rainbow-delimiters.nvim" },
+     -- dependencies =  { "HiPhish/rainbow-delimiters.nvim" },
      build = function()
        require("nvim-treesitter.install").update({ with_sync = true })
      end,
@@ -87,7 +106,7 @@ require("lazy").setup({
        require("nvim-treesitter.configs").setup({
          ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "javascript", "cmake", "python" },
          auto_install = true,
-         highlight = { enable = true, additional_vim_regex_highlighting = false },
+         highlight = { enable = true, additional_vim_regex_highlighting = true },
          incremental_selection = {
            enable = true,
            keymaps = {
@@ -130,16 +149,16 @@ require("lazy").setup({
     config = false,
     init = function()
       -- Disable automatic setup, we are doing it manually
-      vim.g.lsp_zero_extend_cmp = 0
-      vim.g.lsp_zero_extend_lspconfig = 0
+      -- vim.g.lsp_zero_extend_cmp = 0
+      -- vim.g.lsp_zero_extend_lspconfig = 0
     end,
   },
-  -- Mason
-  {
-    'williamboman/mason.nvim',
-    lazy = true,
-    config = true,
-  },
+-- Mason
+{
+  'williamboman/mason.nvim',
+  lazy = true,
+  config = true,
+},
 
   -- Autocompletion
   {
@@ -152,38 +171,49 @@ require("lazy").setup({
        {'hrsh7th/vim-vsnip'},
        {'hrsh7th/vim-vsnip-integ'},
        {'kitagry/vs-snippets'},
-       {'cstrap/python-snippets'}
+       {'cstrap/python-snippets'},
+       {'onsails/lspkind.nvim'},
+       -- {'mfussenegger/nvim-jdtls'}
      },
      event = 'InsertEnter',
      config = function()
-       -- Here is where you configure the autocompletion settings.
-       -- And you can configure cmp even more, if you want to.
-      local cmp = require('cmp')
+     local cmp = require('cmp')
+     local lspkind = require('lspkind')
+     require("luasnip.loaders.from_vscode").lazy_load()
 
-      require("luasnip.loaders.from_vscode").lazy_load()
-       cmp.setup({
-          mapping = cmp.mapping.preset.insert({
-            ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-            ['<C-f>'] = cmp.mapping.scroll_docs(4),
-            ['<C-o>'] = cmp.mapping.complete(),
-            ['<C-e>'] = cmp.mapping.abort(),
-            ['<CR>'] = cmp.mapping.confirm({ select = true }),
-          }),
-
-          snippet = {
-              expand = function(args)
-                  require("luasnip").lsp_expand(args.body)
-              end,
-          },
-
-          sources = cmp.config.sources({
-            { name = 'nvim_lsp' },
-            { name = 'luasnip' },
-          }, {
-            { name = 'buffer' },
-          })
-        })
-     end
+    cmp.setup({
+    window = {
+      completion = cmp.config.window.bordered(),
+      documentation = cmp.config.window.bordered(),
+      transparent = true
+    },
+    snippet = {
+    expand = function(args)
+      -- vim.fn["vsnip#anonymous"](args.body)
+      require("luasnip").lsp_expand(args.body)
+    end,
+    },
+    mapping = cmp.mapping.preset.insert({
+    ['<C-n>'] = cmp.mapping.select_next_item(),
+    ['<C-p>'] = cmp.mapping.select_prev_item(),
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
+    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+    }),
+    sources = cmp.config.sources({
+        { name = 'nvim_lsp' },
+        { name = 'vsnip' },
+        { name = 'luasnip'},
+        }, {
+        { name = 'buffer' },
+    }),
+    formatting = {
+        format = lspkind.cmp_format({ mode = 'symbol_text' }),
+    },
+    })
+    end
   },
 
   -- Snippets
@@ -195,48 +225,9 @@ require("lazy").setup({
         'OrangeT/vim-csharp'
     },
   },
+
   {
     'hrsh7th/cmp-nvim-lsp',
-  },
-  {
-    'hrsh7th/nvim-cmp',
-    config = function()
-    local cmp = require'cmp'
-    require("luasnip.loaders.from_vscode").lazy_load()
-
-    cmp.setup({
-        snippet = {
-          -- REQUIRED - you must specify a snippet engine
-          expand = function(args)
-            -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-            require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-            -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-            -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-            -- vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
-          end,
-        },
-        window = {
-          -- completion = cmp.config.window.bordered(),
-          -- documentation = cmp.config.window.bordered(),
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-        }),
-        sources = cmp.config.sources({
-          { name = '_lsp' },
-          --{ name = 'vsnip' }, -- For vsnip users.
-          { name = 'luasnip' }, -- For luasnip users.
-          -- { name = 'ultisnips' }, -- For ultisnips users.
-          -- { name = 'snippy' }, -- For snippy users.
-        }, {
-          { name = 'buffer' },
-        })
-      })
-    end,
   },
 
   -- Autocompletion
@@ -256,13 +247,15 @@ require("lazy").setup({
 
     end
   },
+
   -- Close pairs like () or {} etc...
   { "windwp/nvim-autopairs", config = true },
 
   {"OmniSharp/omnisharp-vim"},
 
+  -- java lsp
   {
-    'mfussenegger/nvim-jdtls',
+    'mfussenegger/nvim-jdtls'
   },
 
   -- LSP
@@ -280,31 +273,107 @@ require("lazy").setup({
 
       lsp_zero.extend_lspconfig()
 
-      lsp_zero.on_attach(function(client, bufnr)
-        -- see :help lsp-zero-keybindings
-        -- to learn the available actions
-        lsp_zero.default_keymaps({buffer = bufnr})
-      end)
+     -- lsp_zero.on_attach(function(client, bufnr)
+     --   -- see :help lsp-zero-keybindings
+     --   -- to learn the available actions
+     --   lsp_zero.default_keymaps({buffer = bufnr})
+     -- end)
 
       require('mason-lspconfig').setup({
             ensure_installed = {
                 "pyright",
-                "jdtls"
+                "jdtls",
+                "clangd"
             },
             handlers = {
             -- this first function is the "default handler"
             -- it applies to every language server without a "custom handler"
             function(server_name)
+                if server_name == "jdtls" then
+                    return
+                end
                 require('lspconfig')[server_name].setup({})
             end,
             -- this is the "custom handler" for `lua_ls`
-            lua_ls = function()
-                -- (Optional) Configure lua language server for neovim
-                local lua_opts = lsp_zero.nvim_lua_ls()
-                require('lspconfig').lua_ls.setup(lua_opts)
-            end,
+           -- lua_ls = function()
+           --     -- (Optional) Configure lua language server for neovim
+           --     local lua_opts = lsp_zero.nvim_lua_ls()
+           --     require('lspconfig').lua_ls.setup(lua_opts)
+           -- end,
             }
         })
+
     end
     },
+
+    {
+        'RRethy/base16-nvim'
+    },
+
+    {
+      "mikavilpas/yazi.nvim",
+      event = "VeryLazy",
+      dependencies = {
+        { "nvim-lua/plenary.nvim", lazy = true },
+      },
+      keys = {
+        --  in this section, choose your own keymappings!
+        {
+          "<leader>b",
+          mode = { "n", "v" },
+          "<cmd>Yazi<cr>",
+          desc = "Open yazi at the current file",
+        },
+        {
+          -- Open in the current working directory
+          "<leader>cw",
+          "<cmd>Yazi cwd<cr>",
+          desc = "Open the file manager in nvim's working directory",
+        },
+        {
+          "<c-up>",
+          "<cmd>Yazi toggle<cr>",
+          desc = "Resume the last yazi session",
+        },
+      },
+      opts = {
+        -- if you want to open yazi instead of netrw, see below for more info
+        open_for_directories = true,
+        transparent =true,
+        keymaps = {
+          show_help = "<f1>",
+        },
+      },
+      --  if you use `open_for_directories=true`, this is recommended
+      init = function()
+        -- More details: https://github.com/mikavilpas/yazi.nvim/issues/802
+        -- vim.g.loaded_netrw = 1
+        vim.g.loaded_netrwPlugin = 1
+      end,
+    },
+
+    {
+        "mvllow/modes.nvim",
+        config = function ()
+            require("modes").setup({
+                colors = {
+                    bg = "lackluster-hack", -- Optional bg param, defaults to Normal hl group
+                    copy =    "#f5c359",
+                    delete =  "#c75c6a",
+                    change =  "#c75c6a", -- Optional param, defaults to delete
+                    format =  "#c79585",
+                    insert =  "#78ccc5",
+                    replace = "#245361",
+                    select =  "#9745be", -- Optional param, defaults to visual
+                    visual =  "#9745be",
+                },
+
+                line_opacity = 0.15,
+                set_cursor = true,
+                set_cursorline = true,
+                set_number = true,
+                set_signcolumn = false,
+            })
+        end
+    }
 })
